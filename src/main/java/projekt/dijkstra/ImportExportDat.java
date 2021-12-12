@@ -96,6 +96,7 @@ public final class ImportExportDat {
                         .connection(data[1])
                         .km(Integer.parseInt(data[8]))
                         .time(LocalTime.parse(fTime))
+                        .allPossibleConnection(new ArrayList<>())
                         .build();
 
                 Node toNode = Node.builder()
@@ -105,6 +106,7 @@ public final class ImportExportDat {
                         .connection(data[1])
                         .km(Integer.parseInt(data[8]))
                         .time(LocalTime.parse(tTime))
+                        .allPossibleConnection(new ArrayList<>())
                         .build();
 
                 ffDataWrapper.getFromNodes().add(fromNode);

@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Builder
@@ -23,4 +25,8 @@ public class Node {
 
     private LocalTime time;
     private int km;
+
+    private Node connectedTo;
+    private boolean visited;
+    private List<Node> allPossibleConnection = new ArrayList<>();
 }

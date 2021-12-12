@@ -22,12 +22,13 @@ public class MainTrieda {
         ImportExportDat.nacitajData(graf);
         ImportExportDat.zapisMaticeVzdialenostiDoCsv(vypocitajZaciatokKoniecZoSuboru("/zGaraze.csv", graf), "zGarazeVysledky.csv");
         ImportExportDat.zapisMaticeVzdialenostiDoCsv(vypocitajZaciatokKoniecZoSuboru("/doGaraze.csv", graf), "doGarazeVysledky.csv");
-        ImportExportDat.zapisMaticeVzdialenostiDoCsv(vypocitajZaciatokKoniecZoSuboru("/konceZaciatkySpojov.csv", graf), "konceZaciatkySpojovVysledky.csv");
+        Map<Integer, Map<Integer, Integer>> mv = vypocitajZaciatokKoniecZoSuboru("/konceZaciatkySpojov.csv", graf);
+        ImportExportDat.zapisMaticeVzdialenostiDoCsv( mv, "konceZaciatkySpojovVysledky.csv");
 
 
-        TokVGraveAlgorimtus tokVGraveAlgorimtus = new TokVGraveAlgorimtus();
-        tokVGraveAlgorimtus.addData(ImportExportDat.nacitajSpoje("/spoje.csv"))
-                .process();
+        TokVGrafeAlgorimtus tokVGrafeAlgorimtus = new TokVGrafeAlgorimtus();
+        tokVGrafeAlgorimtus.addData(ImportExportDat.nacitajSpoje("/spoje.csv"), mv)
+                .process(600);
     }
 
     private static Map<Integer, Map<Integer, Integer>> vypocitajZaciatokKoniecZoSuboru(String nazovSuboru, Graf graf) {
