@@ -23,6 +23,11 @@ public class MainTrieda {
         ImportExportDat.zapisMaticeVzdialenostiDoCsv(vypocitajZaciatokKoniecZoSuboru("/zGaraze.csv", graf), "zGarazeVysledky.csv");
         ImportExportDat.zapisMaticeVzdialenostiDoCsv(vypocitajZaciatokKoniecZoSuboru("/doGaraze.csv", graf), "doGarazeVysledky.csv");
         ImportExportDat.zapisMaticeVzdialenostiDoCsv(vypocitajZaciatokKoniecZoSuboru("/konceZaciatkySpojov.csv", graf), "konceZaciatkySpojovVysledky.csv");
+
+
+        TokVGraveAlgorimtus tokVGraveAlgorimtus = new TokVGraveAlgorimtus();
+        tokVGraveAlgorimtus.addData(ImportExportDat.nacitajSpoje("/spoje.csv"))
+                .process();
     }
 
     private static Map<Integer, Map<Integer, Integer>> vypocitajZaciatokKoniecZoSuboru(String nazovSuboru, Graf graf) {

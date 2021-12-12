@@ -5,6 +5,9 @@
  */
 package projekt.dijkstra;
 
+import projekt.bean.FFDataWrapper;
+import projekt.bean.Node;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -12,6 +15,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -66,6 +71,53 @@ public final class ImportExportDat {
             is.close();
         } catch (IOException ex) {
         }
+    }
+
+    public static FFDataWrapper nacitajSpoje(String nazovSuboru) {
+        FFDataWrapper ffDataWrapper = FFDataWrapper.builder()
+                .fromNodes(new ArrayList<>())
+                .toNodes(new ArrayList<>())
+                .build();
+
+        try {
+            InputStream is = ImportExportDat.class.getResourceAsStream(nazovSuboru);
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            String riadok;
+            while ((riadok = br.readLine()) != null) {
+                String[] data = riadok.split(";");
+
+                String fTime = data[4].length() == 8 ? data[4] : "0" + data[4];
+                String tTime = data[7].length() == 8 ? data[7] : "0" + data[7];
+
+                Node fromNode = Node.builder()
+                        .nodeId(Integer.parseInt(data[2]))
+                        .nodeName(data[3])
+                        .line(data[0])
+                        .connection(data[1])
+                        .km(Integer.parseInt(data[8]))
+                        .time(LocalTime.parse(fTime))
+                        .build();
+
+                Node toNode = Node.builder()
+                        .nodeId(Integer.parseInt(data[5]))
+                        .nodeName(data[6])
+                        .line(data[0])
+                        .connection(data[1])
+                        .km(Integer.parseInt(data[8]))
+                        .time(LocalTime.parse(tTime))
+                        .build();
+
+                ffDataWrapper.getFromNodes().add(fromNode);
+
+                ffDataWrapper.getToNodes().add(toNode);
+
+            }
+            br.close();
+            is.close();
+        } catch (IOException ex) {
+        }
+
+        return ffDataWrapper;
     }
 
     public static void zapisMaticeVzdialenostiDoCsv(Map<Integer, Map<Integer, Integer>> vzdialenosti, String nazovSuboru) {
