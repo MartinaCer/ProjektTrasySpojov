@@ -37,7 +37,7 @@ public class TokVGrafeAlgorimtus {
             if (!set.contains(noderFrom)) {
                 set.add(noderFrom);
 
-                if (noderFrom.getConnectedTo() == null || al(set, noderFrom)) {
+                if (noderFrom.getConnectedTo() == null || al(set, noderFrom.getConnectedTo())) {
                     noderFrom.setConnectedTo(n);
                     return true;
                 }
@@ -81,7 +81,7 @@ public class TokVGrafeAlgorimtus {
 
             });
 
-            toNode.getAllPossibleConnection().sort((o1, o2) -> o1.getTime().compareTo(o2.getTime()));
+            //toNode.getAllPossibleConnection().sort((o1, o2) -> o1.getTime().compareTo(o2.getTime()));
 
         });
     }
