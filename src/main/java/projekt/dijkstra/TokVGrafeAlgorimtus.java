@@ -3,7 +3,10 @@ package projekt.dijkstra;
 import projekt.bean.FFDataWrapper;
 import projekt.bean.Node;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class TokVGrafeAlgorimtus {
 
@@ -26,6 +29,25 @@ public class TokVGrafeAlgorimtus {
 
     }
 
+    private boolean al(Set<Node> set, Node n) {
+
+
+        for (int i = 0; i < n.getAllPossibleConnection().size(); i++) {
+            Node noderFrom = n.getAllPossibleConnection().get(i);
+            if (!set.contains(noderFrom)) {
+                set.add(noderFrom);
+
+                if (noderFrom.getConnectedTo() == null || al(set, noderFrom)) {
+                    noderFrom.setConnectedTo(n);
+                    return true;
+                }
+
+            }
+
+        }
+        return false;
+    }
+
     private void alg() {
         ffDataWrapper.getToNodes().forEach(n -> {
             n.setConnectedTo(null);
@@ -33,20 +55,13 @@ public class TokVGrafeAlgorimtus {
 
         int pocetPrepojeni = 0;
 
-        for (Node toNode : ffDataWrapper.getToNodes()) {
-//            boolean visited[] = new boolean[toNode.getAllPossibleConnection().size()];
-//            for(int i = 0; i < toNode.getAllPossibleConnection().size(); ++i)
-//                visited[i] = false;
+        for (int i = 0; i < ffDataWrapper.getToNodes().size(); i++) {
+            Set<Node> set = new TreeSet<Node>((o1, o2) -> Integer.compare(o1.getId(), o2.getId()));
 
-            for (Node fromNode : toNode.getAllPossibleConnection()) {
-                if (fromNode.getConnectedTo() != null)
-                    continue;
-                else {
-                    fromNode.setConnectedTo(toNode);
-                    pocetPrepojeni++;
-                    break;
-                }
+            if (al(set, ffDataWrapper.getToNodes().get(i))) {
+                pocetPrepojeni++;
             }
+
         }
 
         System.out.println("Celkovy pocet spojov: " + ffDataWrapper.getToNodes().size());

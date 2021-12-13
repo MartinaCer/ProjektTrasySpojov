@@ -14,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Node {
+    private int id;
 
     private int nodeId;
     private String nodeName;

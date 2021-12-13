@@ -83,6 +83,9 @@ public final class ImportExportDat {
             InputStream is = ImportExportDat.class.getResourceAsStream(nazovSuboru);
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             String riadok;
+
+            int id = 0;
+
             while ((riadok = br.readLine()) != null) {
                 String[] data = riadok.split(";");
 
@@ -90,6 +93,7 @@ public final class ImportExportDat {
                 String tTime = data[7].length() == 8 ? data[7] : "0" + data[7];
 
                 Node fromNode = Node.builder()
+                        .id(id)
                         .nodeId(Integer.parseInt(data[2]))
                         .nodeName(data[3])
                         .line(data[0])
@@ -100,6 +104,7 @@ public final class ImportExportDat {
                         .build();
 
                 Node toNode = Node.builder()
+                        .id(id)
                         .nodeId(Integer.parseInt(data[5]))
                         .nodeName(data[6])
                         .line(data[0])
@@ -112,6 +117,8 @@ public final class ImportExportDat {
                 ffDataWrapper.getFromNodes().add(fromNode);
 
                 ffDataWrapper.getToNodes().add(toNode);
+
+                id++;
 
             }
             br.close();
