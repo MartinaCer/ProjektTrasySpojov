@@ -19,6 +19,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import projekt.dto.PocetSpojovDto;
 
 /**
  *
@@ -150,6 +151,27 @@ public final class ImportExportDat {
         } catch (FileNotFoundException e) {
             System.out.println(e.getMessage());
         }
+    }
 
+    public static void zapisSpojeSekundyDoCsv(Map<Integer, PocetSpojovDto> spojeSekundy, String nazovSuboru) {
+        try (PrintWriter writer = new PrintWriter(nazovSuboru)) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("pocet sekund;spoje celkovo;pocet prepojeni;pocet turnusov\n");
+            for (Map.Entry<Integer, PocetSpojovDto> entry : spojeSekundy.entrySet()) {
+                PocetSpojovDto dto = entry.getValue();
+                sb.append(entry.getKey());
+                sb.append(";");
+                sb.append(dto.getSpojeCelkovo());
+                sb.append(";");
+                sb.append(dto.getPocetPrepojeni());
+                sb.append(";");
+                sb.append(dto.getSpojeCelkovo() - dto.getPocetPrepojeni());
+                sb.append("\n");
+            }
+            writer.write(sb.toString());
+            writer.close();
+        } catch (FileNotFoundException e) {
+            System.out.println(e.getMessage());
+        }
     }
 }

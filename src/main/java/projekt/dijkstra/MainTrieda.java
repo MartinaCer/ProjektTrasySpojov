@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import projekt.dto.PocetSpojovDto;
 
 /**
  *
@@ -23,12 +24,15 @@ public class MainTrieda {
         ImportExportDat.zapisMaticeVzdialenostiDoCsv(vypocitajZaciatokKoniecZoSuboru("/zGaraze.csv", graf), "zGarazeVysledky.csv");
         ImportExportDat.zapisMaticeVzdialenostiDoCsv(vypocitajZaciatokKoniecZoSuboru("/doGaraze.csv", graf), "doGarazeVysledky.csv");
         Map<Integer, Map<Integer, Integer>> mv = vypocitajZaciatokKoniecZoSuboru("/konceZaciatkySpojov.csv", graf);
-        ImportExportDat.zapisMaticeVzdialenostiDoCsv( mv, "konceZaciatkySpojovVysledky.csv");
-
+        ImportExportDat.zapisMaticeVzdialenostiDoCsv(mv, "konceZaciatkySpojovVysledky.csv");
 
         TokVGrafeAlgorimtus tokVGrafeAlgorimtus = new TokVGrafeAlgorimtus();
-        tokVGrafeAlgorimtus.addData(ImportExportDat.nacitajSpoje("/spoje.csv"), mv)
-                .process(600);
+        tokVGrafeAlgorimtus.addData(ImportExportDat.nacitajSpoje("/spoje.csv"), mv);
+        Map<Integer, PocetSpojovDto> spojeSekundy = new HashMap<>();
+        for (int i = 0; i < 1800; i += 30) {
+            spojeSekundy.put(i, tokVGrafeAlgorimtus.process(i));
+        }
+        ImportExportDat.zapisSpojeSekundyDoCsv(spojeSekundy, "spojePocetSekund.csv");
     }
 
     private static Map<Integer, Map<Integer, Integer>> vypocitajZaciatokKoniecZoSuboru(String nazovSuboru, Graf graf) {

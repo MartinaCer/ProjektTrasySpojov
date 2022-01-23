@@ -3,10 +3,10 @@ package projekt.dijkstra;
 import projekt.bean.FFDataWrapper;
 import projekt.bean.Node;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import projekt.dto.PocetSpojovDto;
 
 public class TokVGrafeAlgorimtus {
 
@@ -21,16 +21,14 @@ public class TokVGrafeAlgorimtus {
         return this;
     }
 
-    public void process(int globalOffsetSeconds) {
+    public PocetSpojovDto process(int globalOffsetSeconds) {
         this.globalOffsetSeconds = globalOffsetSeconds;
 
         calculatePossibleConnections();
-        alg();
-
+        return alg();
     }
 
     private boolean al(Set<Node> set, Node n) {
-
 
         for (int i = 0; i < n.getAllPossibleConnection().size(); i++) {
             Node noderFrom = n.getAllPossibleConnection().get(i);
@@ -48,7 +46,7 @@ public class TokVGrafeAlgorimtus {
         return false;
     }
 
-    private void alg() {
+    private PocetSpojovDto alg() {
         ffDataWrapper.getToNodes().forEach(n -> {
             n.setConnectedTo(null);
         });
@@ -57,16 +55,11 @@ public class TokVGrafeAlgorimtus {
 
         for (int i = 0; i < ffDataWrapper.getToNodes().size(); i++) {
             Set<Node> set = new TreeSet<Node>((o1, o2) -> Integer.compare(o1.getId(), o2.getId()));
-
             if (al(set, ffDataWrapper.getToNodes().get(i))) {
                 pocetPrepojeni++;
             }
-
         }
-
-        System.out.println("Celkovy pocet spojov: " + ffDataWrapper.getToNodes().size());
-        System.out.println("Pocet prepojeni: " + pocetPrepojeni);
-        System.out.println("Pocet turnusov: " + (ffDataWrapper.getToNodes().size() - pocetPrepojeni));
+        return new PocetSpojovDto(ffDataWrapper.getToNodes().size(), pocetPrepojeni);
     }
 
     private void calculatePossibleConnections() {
@@ -82,7 +75,6 @@ public class TokVGrafeAlgorimtus {
             });
 
             //toNode.getAllPossibleConnection().sort((o1, o2) -> o1.getTime().compareTo(o2.getTime()));
-
         });
     }
 }
