@@ -31,7 +31,6 @@ public class TokVGrafeAlgorimtus {
 
     private boolean al(Set<Node> set, Node n) {
 
-
         for (int i = 0; i < n.getAllPossibleConnection().size(); i++) {
             Node noderFrom = n.getAllPossibleConnection().get(i);
             if (!set.contains(noderFrom)) {

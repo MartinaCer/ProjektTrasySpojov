@@ -5,6 +5,11 @@
  */
 package projekt.dijkstra;
 
+import projekt.turnusy.Scheduler;
+import projekt.turnusy.bean.FDWrapper;
+import projekt.turnusy.bean.FNode;
+import projekt.turnusy.enums.NodeType;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +17,6 @@ import java.util.Map;
 import java.util.Scanner;
 
 /**
- *
  * @author Ja
  */
 public class MainTrieda {
@@ -23,17 +27,55 @@ public class MainTrieda {
         ImportExportDat.zapisMaticeVzdialenostiDoCsv(vypocitajZaciatokKoniecZoSuboru("/zGaraze.csv", graf), "zGarazeVysledky.csv");
         ImportExportDat.zapisMaticeVzdialenostiDoCsv(vypocitajZaciatokKoniecZoSuboru("/doGaraze.csv", graf), "doGarazeVysledky.csv");
         Map<Integer, Map<Integer, Integer>> mv = vypocitajZaciatokKoniecZoSuboru("/konceZaciatkySpojov.csv", graf);
-        ImportExportDat.zapisMaticeVzdialenostiDoCsv( mv, "konceZaciatkySpojovVysledky.csv");
+        ImportExportDat.zapisMaticeVzdialenostiDoCsv(mv, "konceZaciatkySpojovVysledky.csv");
 
 
-        TokVGrafeAlgorimtus tokVGrafeAlgorimtus = new TokVGrafeAlgorimtus();
-        tokVGrafeAlgorimtus.addData(ImportExportDat.nacitajSpoje("/spoje.csv"), mv)
-                .process(600);
+//        TokVGrafeAlgorimtus tokVGrafeAlgorimtus = new TokVGrafeAlgorimtus();
+//        tokVGrafeAlgorimtus.addData(ImportExportDat.nacitajSpoje("/spoje.csv"), mv)
+//                .process(600);
+
+        turnusy(mv);
+    }
+
+    private static void turnusy(Map<Integer, Map<Integer, Integer>> mv) {
+        Scheduler w = new Scheduler();
+        FNode.generateId();
+        FNode.generateId();
+
+        FDWrapper data = ImportExportDat.nacitajSpojeV2("/spoje.csv");
+
+        data.setDistances(mv);
+        data.setSink(FNode.builder()
+                .nodeId(1).stationId(401).stationName("Lipt.Mikuláš - ustie")
+                .nodeType(NodeType.SINK)
+                .possibleEdgesGoOut(new ArrayList<>())
+                .possibleEdgesGoIn(new ArrayList<>())
+                .edgesGoOut(new ArrayList<>())
+                .edgesGoIn(new ArrayList<>())
+                .build());
+        data.setSource(FNode.builder()
+                .nodeId(0).stationId(401).stationName("Lipt.Mikuláš - zdroj")
+                .nodeType(NodeType.SOURCE)
+                .possibleEdgesGoOut(new ArrayList<>())
+                .possibleEdgesGoIn(new ArrayList<>())
+                .edgesGoOut(new ArrayList<>())
+                .edgesGoIn(new ArrayList<>())
+                .build());
+//        401;Lipt.Mikuláš,,AS;471;Garáž LM;180;2
+//        471;Garáž LM;401;Lipt.Mikuláš,,AS;180;2
+//
+
+        w.setData(data);
+        w.process(600);
     }
 
     private static Map<Integer, Map<Integer, Integer>> vypocitajZaciatokKoniecZoSuboru(String nazovSuboru, Graf graf) {
         List<Integer> zaciatky = new ArrayList<>();
         List<Integer> konce = new ArrayList<>();
+
+        zaciatky.add(401);
+        konce.add(401);
+
         ImportExportDat.nacitajZaciatkyAKonce(zaciatky, konce, nazovSuboru);
         //prvy kluc je kod zaciatocnej zastavky, druhy kluc konecnej zastavky, hodnota je vzdialenost
         Map<Integer, Map<Integer, Integer>> vzdialenosti = new HashMap<>();

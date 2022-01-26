@@ -7,6 +7,9 @@ package projekt.dijkstra;
 
 import projekt.bean.FFDataWrapper;
 import projekt.bean.Node;
+import projekt.turnusy.bean.FDWrapper;
+import projekt.turnusy.bean.FNode;
+import projekt.turnusy.enums.NodeType;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -127,6 +130,65 @@ public final class ImportExportDat {
         }
 
         return ffDataWrapper;
+    }
+
+    public static FDWrapper nacitajSpojeV2(String nazovSuboru) {
+        FDWrapper dataWrapper = new FDWrapper();
+
+        try {
+            InputStream is = ImportExportDat.class.getResourceAsStream(nazovSuboru);
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            String riadok;
+
+            while ((riadok = br.readLine()) != null) {
+                String[] data = riadok.split(";");
+
+                String fTime = data[4].length() == 8 ? data[4] : "0" + data[4];
+                String tTime = data[7].length() == 8 ? data[7] : "0" + data[7];
+
+                FNode departureNode = FNode.builder()
+                        .nodeId(FNode.generateId())
+                        .stationId(Integer.parseInt(data[2]))
+                        .stationName(data[3])
+                        .line(data[0])
+                        .vehicle(data[1])
+                        .time(LocalTime.parse(fTime))
+                        .possibleEdgesGoOut(new ArrayList<>())
+                        .possibleEdgesGoIn(new ArrayList<>())
+                        .edgesGoOut(new ArrayList<>())
+                        .edgesGoIn(new ArrayList<>())
+                        .nodeType(NodeType.DEPARTURE)
+                        .distanceInKm(Integer.parseInt(data[8]))
+                        .build();
+
+                FNode arrivalNode = FNode.builder()
+                        .nodeId(FNode.generateId())
+                        .stationId(Integer.parseInt(data[5]))
+                        .stationName(data[6])
+                        .line(data[0])
+                        .vehicle(data[1])
+                        .time(LocalTime.parse(tTime))
+                        .possibleEdgesGoOut(new ArrayList<>())
+                        .possibleEdgesGoIn(new ArrayList<>())
+                        .edgesGoOut(new ArrayList<>())
+                        .edgesGoIn(new ArrayList<>())
+                        .nodeType(NodeType.ARRIVAL)
+                        .distanceInKm(Integer.parseInt(data[8]))
+                        .build();
+
+                departureNode.setSiblingNode(arrivalNode);
+                arrivalNode.setSiblingNode(departureNode);
+
+                dataWrapper.getArrivals().add(arrivalNode);
+                dataWrapper.getDepartures().add(departureNode);
+
+            }
+            br.close();
+            is.close();
+        } catch (IOException ex) {
+        }
+
+        return dataWrapper;
     }
 
     public static void zapisMaticeVzdialenostiDoCsv(Map<Integer, Map<Integer, Integer>> vzdialenosti, String nazovSuboru) {
