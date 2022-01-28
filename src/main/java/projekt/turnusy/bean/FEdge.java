@@ -15,7 +15,6 @@ public class FEdge {
     // time in minutes
     private int price;
 
-
     public FNode getOppositeNode(FNode node) {
         if (nodeFrom == node) {
             return nodeTo;

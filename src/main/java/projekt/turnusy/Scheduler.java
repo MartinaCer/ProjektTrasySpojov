@@ -150,91 +150,99 @@ public class Scheduler {
 //        edgesMap.get(3).put(4, FEdge.builder().nodeFrom(n2).nodeTo(n4).flow(1).price(3).build());
 
         while (true) {
-            int D[][] = new int[data.getArrivals().size() * 2 + 2][data.getArrivals().size() * 2 + 2];
-            int X[][] = new int[data.getArrivals().size() * 2 + 2][data.getArrivals().size() * 2 + 2];
 
-//            int D[][] = new int[5][5];
-//            int X[][] = new int[5][5];
+            long millisecondsStart = System.currentTimeMillis();
 
-            for (int i = 0; i < D.length; i++) {
-                for (int j = 0; j < D.length; j++) {
+            Map<Integer, Map<Integer, Integer>> e = new HashMap<>();
+
+            int nodesCount = data.getArrivals().size() * 2 + 2;
+//            int nodesCount = 5;
+
+            for (int i = 0; i < nodesCount; i++) {
+                for (int j = 0; j < nodesCount; j++) {
                     if (edgesMap.containsKey(j) && edgesMap.get(j).containsKey(i) && edgesMap.get(j).get(i).getFlow() > 0) {
-                        D[i][j] = -edgesMap.get(j).get(i).getPrice();
-                        if (i == 0) {
-                            System.out.println(D[i][j]);
+
+                        if (!e.containsKey(i)) {
+                            e.put(i, new HashMap<>());
                         }
-                        X[i][j] = i;
+
+                        e.get(i).put(j, -edgesMap.get(j).get(i).getPrice());
+
                     } else if (edgesMap.containsKey(i) && edgesMap.get(i).containsKey(j) && edgesMap.get(i).get(j).getFlow() < 1 &&
                             (!edgesMap.containsKey(j) || !edgesMap.get(j).containsKey(i) || edgesMap.get(j).get(i).getFlow() == 0)) {
-                        D[i][j] = edgesMap.get(i).get(j).getPrice();
-                        X[i][j] = i;
-                    } else {
-                        D[i][j] = MAX;
-                        X[i][j] = MAX;
-                    }
 
-                }
-            }
-
-//            int INF = 1000;
-//
-//            int D[][] = {
-//                    {INF, INF, INF, INF, INF},
-//                    {-1, INF, 2, INF, INF},
-//                    {INF, -2, INF, INF, 2},
-//                    {INF, -3, INF, INF, INF},
-//                    {INF, INF, INF, -3, INF},
-//            };
-//            int X[][] = {
-//                    {INF, INF, INF, INF, INF},
-//                    {-1, INF, 1, INF, INF},
-//                    {INF, 2, INF, INF, 2},
-//                    {INF, 3, INF, INF, INF},
-//                    {INF, INF, INF, 4, INF},
-//            };
-
-            boolean foundNegativeCycle = false;
-            int j1 = -1;
-
-            //floyd
-            for (int k = 0; k < D.length && !foundNegativeCycle; k++) {
-                for (int i = 0; i < D.length && !foundNegativeCycle; i++) {
-                    for (int j = 0; j < D.length && !foundNegativeCycle; j++) {
-
-                        int sum = D[i][k] + D[k][j];
-                        if (sum > MAX)
-                            sum = MAX;
-
-                        if (sum < MIN) {
-                            sum = MIN;
+                        if (!e.containsKey(i)) {
+                            e.put(i, new HashMap<>());
                         }
 
-                        if (sum < D[i][j]) {//(D[i][k] != Integer.MAX_VALUE && D[k][j] != Integer.MAX_VALUE && D[i][k] + D[k][j] < D[i][j]) { //D[i][k] != Integer.MAX_VALUE && D[k][j] != Integer.MAX_VALUE &&
-                            D[i][j] = sum;
-
-                            X[i][j] = X[k][j];
-
-                            if (i == j && D[i][j] < 0) {
-                                foundNegativeCycle = true;
-                                j1 = i;
-                            }
-                        }
+                        e.get(i).put(j, edgesMap.get(i).get(j).getPrice());
                     }
                 }
             }
 
-            if (j1 != -1) {
+            long ms = System.currentTimeMillis() - millisecondsStart;
+            System.out.println("zostrojenie - hran: " + ms);
+            millisecondsStart = System.currentTimeMillis();
+
+            int M[][] = new int[2][nodesCount];
+            for (int i = 0; i < M[0].length; i++) {
+                M[0][i] = MAX;
+                M[1][i] = -1;
+            }
+
+            ms = System.currentTimeMillis() - millisecondsStart;
+            System.out.println("zostrojenie M: " + ms);
+            millisecondsStart = System.currentTimeMillis();
+
+            boolean ad =false;
+
+            for (int i = 0; i < nodesCount; i++ ) {
+                for (Map.Entry<Integer, Map<Integer, Integer>> me : e.entrySet()) {
+                    if (!ad) {
+                        M[0][me.getKey()] = 0;
+                        ad = true;
+                    }
+                    for (Map.Entry<Integer, Integer> c : me.getValue().entrySet()) {
+                        if (M[0][c.getKey()] > c.getValue() + M[0][me.getKey()]) {
+                            M[0][c.getKey()] = c.getValue() + M[0][me.getKey()];
+                            M[1][c.getKey()] = me.getKey();
+                        }
+                    }
+                }
+            }
+            int cycleStart = -1;
+            ms = System.currentTimeMillis() - millisecondsStart;
+            System.out.println("Belman: " + ms);
+            millisecondsStart = System.currentTimeMillis();
+
+            for (Map.Entry<Integer, Map<Integer, Integer>> me : e.entrySet()) {
+                for (Map.Entry<Integer, Integer> c : me.getValue().entrySet()) {
+                    if (M[0][c.getKey()] > c.getValue() + M[0][me.getKey()]) {
+                        cycleStart = c.getKey();
+                    }
+                }
+            }
+
+            ms = System.currentTimeMillis() - millisecondsStart;
+            System.out.println("overenie c v M: " + ms);
+            millisecondsStart = System.currentTimeMillis();
+
+            if (cycleStart != -1) {
                 List<Integer> path = new ArrayList<>();
-                int temp = j1;
+                int temp = cycleStart;
 
-                while (!path.contains(X[j1][temp])) { //path.size() < 2 || path.get(path.size() - 1) != X[j1][j1]) {
-                    path.add(X[j1][temp]);
-                    temp = X[j1][temp];
+                while (!path.contains(temp)) { //path.size() < 2 || path.get(path.size() - 1) != X[j1][j1]) {
+                    path.add(temp);
+                    temp = M[1][temp];
                 }
 
-                int ind = path.indexOf(X[j1][temp]);
+                int ind = path.indexOf(temp);
                 path = path.subList(ind, path.size());
-                path.add(X[j1][temp]);
+                path.add(temp);
+
+                ms = System.currentTimeMillis() - millisecondsStart;
+                System.out.println("cesta c M: " + ms);
+                millisecondsStart = System.currentTimeMillis();
 
                 System.out.println("Negative cycle: " + path);
 
@@ -258,17 +266,15 @@ public class Scheduler {
                     }
                 }
 
+                ms = System.currentTimeMillis() - millisecondsStart;
+                System.out.println("zmena flowu: " + ms);
+                millisecondsStart = System.currentTimeMillis();
+
             } else {
                 break;
             }
 
             f = 0;
-
-            for (FEdge edge : data.getAllEdges()) {
-                if (edge.getFlow() > 0) {
-                    f += edge.getPrice();
-                }
-            }
 
 //            long p = data.getAllEdges().stream().filter(e -> e.getNodeFrom().getNodeType() != null && e.getNodeTo().getNodeType() != null && e.getFlow() > 0).count();
 //            System.out.println(p);
@@ -347,6 +353,8 @@ public class Scheduler {
 
                 }
             });
+            arrival.getPossibleEdgesGoOut().sort((o1, o2) -> o1.getNodeTo().getTime().compareTo(o2.getNodeTo().getTime()));
+
         });
     }
 }
