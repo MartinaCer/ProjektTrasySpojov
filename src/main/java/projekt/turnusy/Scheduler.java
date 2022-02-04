@@ -129,32 +129,16 @@ public class Scheduler {
             edgesMap.get(edge.getNodeFrom().getNodeId()).put(edge.getNodeTo().getNodeId(), edge);
         });
 
+        int D[][] = new int[data.getArrivals().size() * 2 + 2][data.getArrivals().size() * 2 + 2];
+        int X[][] = new int[data.getArrivals().size() * 2 + 2][data.getArrivals().size() * 2 + 2];
 
-//        FNode n0 = FNode.builder().nodeId(0).build();
-//        FNode n1 = FNode.builder().nodeId(1).build();
-//        FNode n2 = FNode.builder().nodeId(2).build();
-//        FNode n3 = FNode.builder().nodeId(3).build();
-//        FNode n4 = FNode.builder().nodeId(4).build();
-//
-//        edgesMap.put(0, new HashMap<>());
-//        edgesMap.get(0).put(1, FEdge.builder().nodeFrom(n0).nodeTo(n1).flow(1).price(1).build());
-//
-//        edgesMap.put(1, new HashMap<>());
-//        edgesMap.get(1).put(2, FEdge.builder().nodeFrom(n1).nodeTo(n2).flow(0).price(2).build());
-//        edgesMap.get(1).put(3, FEdge.builder().nodeFrom(n1).nodeTo(n3).flow(1).price(3).build());
-//
-//        edgesMap.put(2, new HashMap<>());
-//        edgesMap.get(2).put(4, FEdge.builder().nodeFrom(n2).nodeTo(n4).flow(0).price(2).build());
-//
-//        edgesMap.put(3, new HashMap<>());
-//        edgesMap.get(3).put(4, FEdge.builder().nodeFrom(n2).nodeTo(n4).flow(1).price(3).build());
+        int forceStop = 0;
 
         while (true) {
-            int D[][] = new int[data.getArrivals().size() * 2 + 2][data.getArrivals().size() * 2 + 2];
-            int X[][] = new int[data.getArrivals().size() * 2 + 2][data.getArrivals().size() * 2 + 2];
-
-//            int D[][] = new int[5][5];
-//            int X[][] = new int[5][5];
+            if (forceStop++ == 50)
+                break;
+            long millisecondsStart = System.currentTimeMillis();
+            long ms = 0;
 
             for (int i = 0; i < D.length; i++) {
                 for (int j = 0; j < D.length; j++) {
@@ -176,32 +160,20 @@ public class Scheduler {
                 }
             }
 
-//            int INF = 1000;
-//
-//            int D[][] = {
-//                    {INF, INF, INF, INF, INF},
-//                    {-1, INF, 2, INF, INF},
-//                    {INF, -2, INF, INF, 2},
-//                    {INF, -3, INF, INF, INF},
-//                    {INF, INF, INF, -3, INF},
-//            };
-//            int X[][] = {
-//                    {INF, INF, INF, INF, INF},
-//                    {-1, INF, 1, INF, INF},
-//                    {INF, 2, INF, INF, 2},
-//                    {INF, 3, INF, INF, INF},
-//                    {INF, INF, INF, 4, INF},
-//            };
+            ms = System.currentTimeMillis() - millisecondsStart;
+            System.out.println("zostrojenie_hran: " + ms);
+            millisecondsStart = System.currentTimeMillis();
 
             boolean foundNegativeCycle = false;
             int j1 = -1;
 
             //floyd
-            for (int k = 0; k < D.length && !foundNegativeCycle; k++) {
-                for (int i = 0; i < D.length && !foundNegativeCycle; i++) {
-                    for (int j = 0; j < D.length && !foundNegativeCycle; j++) {
+            int k = 0, j = 0, ii = 0;
+            for (k = 0; k < D.length && !foundNegativeCycle; k++) {
+                for (ii = 0; ii < D.length && !foundNegativeCycle; ii++) {
+                    for (j = 0; j < D.length && !foundNegativeCycle; j++) {
 
-                        int sum = D[i][k] + D[k][j];
+                        int sum = D[ii][k] + D[k][j];
                         if (sum > MAX)
                             sum = MAX;
 
@@ -209,19 +181,23 @@ public class Scheduler {
                             sum = MIN;
                         }
 
-                        if (sum < D[i][j]) {//(D[i][k] != Integer.MAX_VALUE && D[k][j] != Integer.MAX_VALUE && D[i][k] + D[k][j] < D[i][j]) { //D[i][k] != Integer.MAX_VALUE && D[k][j] != Integer.MAX_VALUE &&
-                            D[i][j] = sum;
+                        if (sum < D[ii][j]) {//(D[i][k] != Integer.MAX_VALUE && D[k][j] != Integer.MAX_VALUE && D[i][k] + D[k][j] < D[i][j]) { //D[i][k] != Integer.MAX_VALUE && D[k][j] != Integer.MAX_VALUE &&
+                            D[ii][j] = sum;
 
-                            X[i][j] = X[k][j];
+                            X[ii][j] = X[k][j];
 
-                            if (i == j && D[i][j] < 0) {
+                            if (ii == j && D[ii][j] < 0) {
                                 foundNegativeCycle = true;
-                                j1 = i;
+                                j1 = ii;
                             }
                         }
                     }
                 }
             }
+            System.out.println(k * 100 / D.length +  " " + ii * 100 / D.length +  " " + j * 100 / D.length);
+            ms = System.currentTimeMillis() - millisecondsStart;
+            System.out.println("floyd: " + ms);
+            millisecondsStart = System.currentTimeMillis();
 
             if (j1 != -1) {
                 List<Integer> path = new ArrayList<>();
@@ -236,7 +212,9 @@ public class Scheduler {
                 path = path.subList(ind, path.size());
                 path.add(X[j1][temp]);
 
-                System.out.println("Negative cycle: " + path);
+                ms = System.currentTimeMillis() - millisecondsStart;
+                System.out.println("zostrojenie_cesty: " + ms);
+                millisecondsStart = System.currentTimeMillis();
 
                 for (int i = 0; i < path.size() - 1; i++) {
                     if (edgesMap.containsKey(path.get(i)) && edgesMap.get(path.get(i)).containsKey(path.get(i + 1))) {
@@ -258,16 +236,14 @@ public class Scheduler {
                     }
                 }
 
+                ms = System.currentTimeMillis() - millisecondsStart;
+                System.out.println("vymena: " + ms);
+                millisecondsStart = System.currentTimeMillis();
+
+                System.out.println("Negative cycle: " + path);
+
             } else {
                 break;
-            }
-
-            f = 0;
-
-            for (FEdge edge : data.getAllEdges()) {
-                if (edge.getFlow() > 0) {
-                    f += edge.getPrice();
-                }
             }
 
 //            long p = data.getAllEdges().stream().filter(e -> e.getNodeFrom().getNodeType() != null && e.getNodeTo().getNodeType() != null && e.getFlow() > 0).count();
@@ -277,8 +253,22 @@ public class Scheduler {
 //                return;
 //            }
 
-            System.out.println("Sum of empty transits in seconds: " + f);
+
         }
+        f = 0;
+        for (FEdge edge : data.getAllEdges()) {
+            if (edge.getFlow() > 0) {
+                f += edge.getPrice();
+            }
+        }
+
+        data.getArrivals().forEach(n -> {
+            int a = (int) n.getPossibleEdgesGoOut().stream().filter(e -> e.getFlow() > 0).count();
+            if (a != 1)
+                System.out.println("je to zle :_(");
+        });
+
+        System.out.println("Sum of empty transits in seconds: " + f);
     }
 
 
@@ -347,6 +337,8 @@ public class Scheduler {
 
                 }
             });
+            arrival.getPossibleEdgesGoOut().sort((o1, o2) -> o1.getNodeTo().getTime().compareTo(o2.getNodeTo().getTime()));
+
         });
     }
 }
