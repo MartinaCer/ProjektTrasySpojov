@@ -5,6 +5,8 @@
  */
 package projekt.dijkstra;
 
+import projekt.lp.Lp;
+import projekt.lp.ModelBuilder;
 import projekt.turnusy.Scheduler;
 import projekt.turnusy.bean.FDWrapper;
 import projekt.turnusy.bean.FNode;
@@ -34,7 +36,16 @@ public class MainTrieda {
 //        tokVGrafeAlgorimtus.addData(ImportExportDat.nacitajSpoje("/spoje.csv"), mv)
 //                .process(600);
 
-        turnusy(mv);
+//        turnusy(mv);
+
+//        FDWrapper data = ImportExportDat.nacitajSpojeV2("/spoje.csv");
+//        data.setDistances(mv);
+//
+//        ModelBuilder b = new ModelBuilder();
+//        b.addData(data, mv);
+//        b.createModel();
+
+        (new Lp()).run();
     }
 
     private static void turnusy(Map<Integer, Map<Integer, Integer>> mv) {

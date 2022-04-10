@@ -1,43 +1,48 @@
 package projekt.lp;
 
 import projekt.bean.FFDataWrapper;
+import projekt.turnusy.bean.FDWrapper;
+import projekt.turnusy.bean.FEdge;
 
 import java.io.*;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ModelBuilder {
-
-    private FFDataWrapper ffDataWrapper;
+    
+    private FDWrapper data;
     private Map<Integer, Map<Integer, Integer>> distMatrix;
 
     private int globalOffsetSeconds;
 
-    public ModelBuilder addData(FFDataWrapper dataWrapper, Map<Integer, Map<Integer, Integer>> mv) {
-        this.ffDataWrapper = dataWrapper;
+    public ModelBuilder addData(FDWrapper dataWrapper, Map<Integer, Map<Integer, Integer>> mv) {
+        this.data = dataWrapper;
         this.distMatrix = mv;
         return this;
     }
 
-    private void calculatePossibleConnections() {
-        AtomicInteger i = new AtomicInteger();
-        ffDataWrapper.getToNodes().forEach(toNode -> {
-            ffDataWrapper.getFromNodes().forEach(fromNode -> {
-                int travelBetweenDistInSec = distMatrix.get(toNode.getNodeId()).get(fromNode.getNodeId());
-                travelBetweenDistInSec += globalOffsetSeconds;
+    public void calculatePossibleConnections() {
+        data.getArrivals().forEach(arrival -> {
+            data.getDepartures().forEach(departure -> {
+                int travelBetweenDistInSec = data.getDistances().get(arrival.getStationId()).get(departure.getStationId());
 
-                if (toNode.getTime().plusSeconds(travelBetweenDistInSec).isBefore(fromNode.getTime())) {
-                    toNode.getAllPossibleConnection().add(fromNode);
-                    i.getAndIncrement();
+                if (arrival.getTime().plusSeconds(travelBetweenDistInSec + data.getGlobalOffset()).isBefore(departure.getTime())) {
+                    FEdge edge = FEdge.builder()
+                            .nodeFrom(arrival)
+                            .nodeTo(departure)
+                            .price(travelBetweenDistInSec / 60)
+                            .flow(0)
+                            .build();
+
+                    arrival.getPossibleEdgesGoOut().add(edge);
+                    departure.getPossibleEdgesGoIn().add(edge);
+                    data.getAllEdges().add(edge);
+
                 }
-
             });
-
-            //toNode.getAllPossibleConnection().sort((o1, o2) -> o1.getTime().compareTo(o2.getTime()));
         });
-        System.out.println(i);
     }
-
+    
     public void createModel() {
         calculatePossibleConnections();
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
@@ -47,10 +52,10 @@ public class ModelBuilder {
 
             AtomicInteger pc = new AtomicInteger();
 
-            ffDataWrapper.getToNodes().forEach(toNodes -> {
-                toNodes.getAllPossibleConnection().forEach(fromNode -> {
+            data.getArrivals().forEach(toNodes -> {
+                toNodes.getPossibleEdgesGoOut().forEach(fromNode -> {
                     try {
-                        writer.write("x" + toNodes.getId() + "_" + fromNode.getId());
+                        writer.write("x" + fromNode.getNodeFrom().getULID() + "_" + fromNode.getNodeTo().getULID());
                         if (pc.get() > 50) {
                             writer.write("\n +");
                             pc.set(0);
@@ -68,16 +73,45 @@ public class ModelBuilder {
             writer.write("Subject To\n");
 
             AtomicInteger i = new AtomicInteger();
-            ffDataWrapper.getToNodes().forEach(toNodes -> {
+            data.getArrivals().forEach(toNodes -> {
                 try {
                     writer.write("c" + i + ":");
                     i.getAndIncrement();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                toNodes.getAllPossibleConnection().forEach(fromNode -> {
+                toNodes.getPossibleEdgesGoOut().forEach(fromNode -> {
                     try {
-                        writer.write("x" + toNodes.getId() + "_" + fromNode.getId());
+                        writer.write("x" + fromNode.getNodeFrom().getULID() + "_" + fromNode.getNodeTo().getULID());
+                        if (pc.get() > 50) {
+                            writer.write("\n +");
+                            pc.set(0);
+                        } else {
+                            writer.write("+");
+                        }
+                        pc.getAndIncrement();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+
+                try {
+                    writer.write(" <= 1\n");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            data.getDepartures().forEach(fromNode -> {
+                try {
+                    writer.write("c" + i + ":");
+                    i.getAndIncrement();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                fromNode.getPossibleEdgesGoIn().forEach(toNodes -> {
+                    try {
+                        writer.write("x" + toNodes.getNodeFrom().getULID() + "_" + toNodes.getNodeTo().getULID());
                         if (pc.get() > 50) {
                             writer.write("\n +");
                             pc.set(0);
@@ -98,14 +132,13 @@ public class ModelBuilder {
             });
 
 
-
             writer.write("\n\n");
             writer.write("Binaries\n");
 
-            ffDataWrapper.getToNodes().forEach(toNodes -> {
-                toNodes.getAllPossibleConnection().forEach(fromNode -> {
+            data.getArrivals().forEach(toNodes -> {
+                toNodes.getPossibleEdgesGoOut().forEach(fromNode -> {
                     try {
-                        writer.write("x" + toNodes.getId() + "_" + fromNode.getId() + " ");
+                        writer.write("x" + fromNode.getNodeFrom().getULID() + "_" + fromNode.getNodeTo().getULID() + " ");
                         if (pc.get() > 50) {
                             writer.write("\n");
                             pc.set(0);
@@ -116,6 +149,8 @@ public class ModelBuilder {
                     }
                 });
             });
+
+            writer.write("\nEND");
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();

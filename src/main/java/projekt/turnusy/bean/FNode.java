@@ -30,6 +30,8 @@ public class FNode {
     // spoj?
     private String vehicle;
 
+    private int ULID;
+
     private List<FEdge> possibleEdgesGoIn = new ArrayList<>();
     private List<FEdge> possibleEdgesGoOut = new ArrayList<>();
 

@@ -141,6 +141,8 @@ public final class ImportExportDat {
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             String riadok;
 
+            int ulid = 0;
+
             while ((riadok = br.readLine()) != null) {
                 String[] data = riadok.split(";");
 
@@ -160,6 +162,7 @@ public final class ImportExportDat {
                         .edgesGoIn(new ArrayList<>())
                         .nodeType(NodeType.DEPARTURE)
                         .distanceInKm(Integer.parseInt(data[8]))
+                        .ULID(ulid)
                         .build();
 
                 FNode arrivalNode = FNode.builder()
@@ -175,7 +178,10 @@ public final class ImportExportDat {
                         .edgesGoIn(new ArrayList<>())
                         .nodeType(NodeType.ARRIVAL)
                         .distanceInKm(Integer.parseInt(data[8]))
+                        .ULID(ulid)
                         .build();
+
+                ulid++;
 
                 departureNode.setSiblingNode(arrivalNode);
                 arrivalNode.setSiblingNode(departureNode);
