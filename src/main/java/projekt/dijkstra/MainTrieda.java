@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import projekt.dto.PocetSpojovDto;
+import projekt.lp.Lp;
+import projekt.lp.ModelBuilder;
 
 /**
  *
@@ -19,6 +21,19 @@ import projekt.dto.PocetSpojovDto;
 public class MainTrieda {
 
     public static void main(String[] args) {
+        (new Lp()).run();
+//        Graf graf = new Graf();
+//        ImportExportDat.nacitajData(graf);
+//        Map<Integer, Map<Integer, Integer>> mv = vypocitajZaciatokKoniecZoSuboru("/konceZaciatkySpojov.csv", graf);
+//        ImportExportDat.zapisMaticeVzdialenostiDoCsv(mv, "konceZaciatkySpojovVysledky.csv");
+//
+//        ModelBuilder modelBuilder = new ModelBuilder();
+//        modelBuilder.addData(ImportExportDat.nacitajSpoje("/spoje.csv"), mv);
+//
+//        modelBuilder.createModel();
+    }
+
+    private void b() {
         Graf graf = new Graf();
         ImportExportDat.nacitajData(graf);
         ImportExportDat.zapisMaticeVzdialenostiDoCsv(vypocitajZaciatokKoniecZoSuboru("/zGaraze.csv", graf), "zGarazeVysledky.csv");
