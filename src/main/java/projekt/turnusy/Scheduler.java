@@ -323,7 +323,9 @@ public class Scheduler {
             data.getDepartures().forEach(departure -> {
                 int travelBetweenDistInSec = data.getDistances().get(arrival.getStationId()).get(departure.getStationId());
 
-                if (arrival.getTime().plusSeconds(travelBetweenDistInSec + data.getGlobalOffset()).isBefore(departure.getTime())) {
+                if (arrival.getTime().getHour() * 3600 + arrival.getTime().getMinute() * 60 + arrival.getTime().getSecond() + travelBetweenDistInSec + data.getGlobalOffset() <
+                        departure.getTime().getHour() * 3600 + departure.getTime().getMinute() * 60 + departure.getTime().getSecond()) {
+
                     FEdge edge = FEdge.builder()
                             .nodeFrom(arrival)
                             .nodeTo(departure)

@@ -32,11 +32,11 @@ public class MainTrieda {
         ImportExportDat.zapisMaticeVzdialenostiDoCsv(mv, "konceZaciatkySpojovVysledky.csv");
 
 
-//        TokVGrafeAlgorimtus tokVGrafeAlgorimtus = new TokVGrafeAlgorimtus();
-//        tokVGrafeAlgorimtus.addData(ImportExportDat.nacitajSpoje("/spoje.csv"), mv)
-//                .process(600);
+        TokVGrafeAlgorimtus tokVGrafeAlgorimtus = new TokVGrafeAlgorimtus();
+        tokVGrafeAlgorimtus.addData(ImportExportDat.nacitajSpoje("/spoje.csv"), mv)
+                .process(600);
 
-//        turnusy(mv);
+        turnusy(mv);
 
 //        FDWrapper data = ImportExportDat.nacitajSpojeV2("/spoje.csv");
 //        data.setDistances(mv);
@@ -45,7 +45,7 @@ public class MainTrieda {
 //        b.addData(data, mv);
 //        b.createModel();
 
-        (new Lp()).run();
+//        (new Lp()).run();
     }
 
     private static void turnusy(Map<Integer, Map<Integer, Integer>> mv) {

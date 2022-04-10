@@ -3,13 +3,14 @@ package projekt.lp;
 import projekt.bean.FFDataWrapper;
 import projekt.turnusy.bean.FDWrapper;
 import projekt.turnusy.bean.FEdge;
+import projekt.turnusy.bean.FNode;
 
 import java.io.*;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ModelBuilder {
-    
+
     private FDWrapper data;
     private Map<Integer, Map<Integer, Integer>> distMatrix;
 
@@ -26,7 +27,10 @@ public class ModelBuilder {
             data.getDepartures().forEach(departure -> {
                 int travelBetweenDistInSec = data.getDistances().get(arrival.getStationId()).get(departure.getStationId());
 
-                if (arrival.getTime().plusSeconds(travelBetweenDistInSec + data.getGlobalOffset()).isBefore(departure.getTime())) {
+                if (arrival.getTime().getHour() * 3600 + arrival.getTime().getMinute() * 60 + arrival.getTime().getSecond() + travelBetweenDistInSec + data.getGlobalOffset() <
+                        departure.getTime().getHour() * 3600 + departure.getTime().getMinute() * 60 + departure.getTime().getSecond()) {
+
+//                if (arrival.getTime().plusSeconds(travelBetweenDistInSec + data.getGlobalOffset()).isBefore(departure.getTime())) {
                     FEdge edge = FEdge.builder()
                             .nodeFrom(arrival)
                             .nodeTo(departure)
@@ -41,8 +45,12 @@ public class ModelBuilder {
                 }
             });
         });
+
+        FNode bb = data.getArrivals().stream().max((a, b) -> a.getTime().compareTo(b.getTime())).get();
+
+        int as = 1;
     }
-    
+
     public void createModel() {
         calculatePossibleConnections();
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
@@ -74,60 +82,70 @@ public class ModelBuilder {
 
             AtomicInteger i = new AtomicInteger();
             data.getArrivals().forEach(toNodes -> {
-                try {
-                    writer.write("c" + i + ":");
-                    i.getAndIncrement();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                toNodes.getPossibleEdgesGoOut().forEach(fromNode -> {
+                if (toNodes.getPossibleEdgesGoOut().size() != 0) {
+
+
                     try {
-                        writer.write("x" + fromNode.getNodeFrom().getULID() + "_" + fromNode.getNodeTo().getULID());
-                        if (pc.get() > 50) {
-                            writer.write("\n +");
-                            pc.set(0);
-                        } else {
-                            writer.write("+");
-                        }
-                        pc.getAndIncrement();
+                        writer.write("c" + i + ":");
+                        i.getAndIncrement();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                });
 
-                try {
-                    writer.write(" <= 1\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    toNodes.getPossibleEdgesGoOut().forEach(fromNode -> {
+                        try {
+                            writer.write("x" + fromNode.getNodeFrom().getULID() + "_" + fromNode.getNodeTo().getULID());
+                            if (pc.get() > 50) {
+                                writer.write("\n +");
+                                pc.set(0);
+                            } else {
+                                writer.write("+");
+                            }
+                            pc.getAndIncrement();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+
+                    try {
+                        writer.write(" <= 1\n");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             });
 
             data.getDepartures().forEach(fromNode -> {
-                try {
-                    writer.write("c" + i + ":");
-                    i.getAndIncrement();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                fromNode.getPossibleEdgesGoIn().forEach(toNodes -> {
+                if (fromNode.getPossibleEdgesGoIn().size() != 0) {
+                    System.out.println("aa + " + fromNode.getULID() + " " + i);
+
                     try {
-                        writer.write("x" + toNodes.getNodeFrom().getULID() + "_" + toNodes.getNodeTo().getULID());
-                        if (pc.get() > 50) {
-                            writer.write("\n +");
-                            pc.set(0);
-                        } else {
-                            writer.write("+");
-                        }
-                        pc.getAndIncrement();
+                        writer.write("c" + i + ":");
+                        i.getAndIncrement();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                });
 
-                try {
-                    writer.write(" <= 1\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    fromNode.getPossibleEdgesGoIn().forEach(toNodes -> {
+                        try {
+                            writer.write("x" + toNodes.getNodeFrom().getULID() + "_" + toNodes.getNodeTo().getULID());
+                            if (pc.get() > 50) {
+                                writer.write("\n +");
+                                pc.set(0);
+                            } else {
+                                writer.write("+");
+                            }
+                            pc.getAndIncrement();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+
+                    try {
+                        writer.write(" <= 1\n");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             });
 
